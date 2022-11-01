@@ -6,10 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MiniReact</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <!-- <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script> -->
+  <!-- <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script> -->
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <script src="./MiniReact.js"></script>
 </head>
@@ -34,16 +34,29 @@
     */
     let element = <h1 title='foo'>Hello</h1>
     console.log('jsx方式', element); // 输出相同的数据
+
     element = React.createElement('h1', {title: 'foo'}, 'Hello')
     console.log('React.createElement方式', element); // 同上
     
     const container = document.getElementById('root')
+
     // React 17 的渲染数据的方法
     // ReactDOM.render(element, container)
+
+    // 原生的方式添加节点
+    const node = document.createElement(element.type)
+    node['title'] = element.props.title
+    const text = document.createTextNode('')
+    text['nodeValue'] = element.props.children
+    node.appendChild(text)
+    container.appendChild(node)
+
     
     // React 18 的渲染数据的方法
-    const root = ReactDOM.createRoot(container)
-    root.render(element)
+    // const root = ReactDOM.createRoot(container)
+    // root.render(element)
+
+
 
   </script>
 </body>
