@@ -10,43 +10,18 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script> -->
   <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <script src="./MiniReact.js"></script>
 </head>
 
 <body>
   <div id="root"></div>
-  <script type="text/babel">
-  // <script>
-    /*
-    ReactElement元素是一种树状结构的最小节点表示，是对该节点的描述，目前来看是一种纯描述性质的数据类型，即描述了将要生成的DOM结构，或其他平台的结构
-    */
-    /* 
-    JSX 表示的 ReactElement 元素，即一个包含 type 和 props 属性的Object实例
-    {
-      type: 'h1',
-      props: {
-        title: 'foo',
-        children: 'Hello'
-      },
-      ...
+  <script>
+    const miniReact = {
+      createElement,
+      createTextElement,
+      render
     }
-    这里能这样使用是因为 babel 做编译
-    */
-    // let element = <h1 title='foo'>Hello</h1>
-    // console.log('jsx方式', element); // 输出相同的数据
 
-    // element = React.createElement('h1', {title: 'foo'}, 'Hello')
-    // console.log('React.createElement方式', element); // 同上
-
-    // const element = "<div id='foo'><a>bar</a><b /></div>"
-    // const MiniReact = {
-    //   createElement
-    // }
-
-
-    // let element = <div id='foo'><a>bar</a><b /></div>
-    const miniReact = new MiniReact()
     const element = miniReact.createElement(
       'div',
       {id: 'foo'},
@@ -56,24 +31,6 @@
 
     const container = document.getElementById('root')
     miniReact.render(element, container)
-    // React 17 的渲染数据的方法
-    // ReactDOM.render(element, container)
-
-    // 原生的方式添加节点
-    // const node = document.createElement(element.type)
-    // node['title'] = element.props.title
-    // const text = document.createTextNode('')
-    // text['nodeValue'] = element.props.children
-    // node.appendChild(text)
-    // container.appendChild(node)
-
-    
-    // React 18 的渲染数据的方法
-    // const root = ReactDOM.createRoot(container)
-    // root.render(element)
-
-
-
   </script>
 </body>
 
