@@ -83,12 +83,21 @@ function workLoop(deadline) {
 requestIdleCallback(workLoop)
 
 function performUnitOfWork(fiber) {
+  /**
+   * 树状回溯法
+   * 在每一个分叉的第一个树杈往下，直到最底层的分叉没有同级，
+   * 再开始从同级的第二个开始，最底级的完成再从父级的兄弟开始一次回溯
+   * 每一个分支都记录parent, 每一个父级节点都只记录第一个子分叉，
+   * 第一个子分叉则记录第二个子分叉，以备回溯，一直回溯到最上层既没有parent,
+   * 也没有同级层，懒回调停止
+   */
+
   // TODO add dom node
-  if(!fiber.dom) {
+  if (!fiber.dom) {
     fiber.dom = createDom(fiber)
   }
 
-  if(fiber.parent) {
+  if (fiber.parent) {
     fiber.parent.dom.appendChild(fiber.dom)
   }
 
@@ -106,24 +115,24 @@ function performUnitOfWork(fiber) {
       dom: null
     }
 
-    if(index === 0) {
+    if (index === 0) {
       fiber.child = newFiber
     } else {
       prevSibling.sibling = newFiber
     }
-  
+
     prevSibling = newFiber
     index++
   }
 
   // TODO return next unit of work
-  if(fiber.child) {
+  if (fiber.child) {
     return fiber.child
   }
 
   let nextFiber = fiber
   while (nextFiber) {
-    if(nextFiber.sibling) {
+    if (nextFiber.sibling) {
       return nextFiber.sibling
     }
     nextFiber = nextFiber.parent
