@@ -10,7 +10,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script> -->
   <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <!-- <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> -->
   <script src="./MiniReact.js"></script>
 </head>
 
@@ -32,14 +32,35 @@
     }
     这里能这样使用是因为 babel 做编译
     */
-    let element = <h1 title='foo'>Hello</h1>
-    console.log('jsx方式', element); // 输出相同的数据
+    // let element = <h1 title='foo'>Hello</h1>
+    // console.log('jsx方式', element); // 输出相同的数据
 
-    element = React.createElement('h1', {title: 'foo'}, 'Hello')
-    console.log('React.createElement方式', element); // 同上
+    // element = React.createElement('h1', {title: 'foo'}, 'Hello')
+    // console.log('React.createElement方式', element); // 同上
+
+    const element = "<div id='foo'><a>bar</a><b /></div>"
+    // 创建一个生成 ReactElement 的方法
+    function createElement(type, props, ...children) {
+      /* 
+        React 创建 element 的方式
+        React.createElement(
+          'div',
+          {id: 'foo'},
+          React.createElement('a', null, 'bar'),
+          React.createElement('b'),
+        )
+      */
+     return {
+      type,
+      props: [
+        ...props,
+        children
+      ]
+     }
+    }
+
     
     const container = document.getElementById('root')
-
     // React 17 的渲染数据的方法
     // ReactDOM.render(element, container)
 
