@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiniReact</title>
+  <script src="./MiniReact.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    // const element = <h1 title="foo">Hello</h1> // ReactElement JSX 表示法
+    // const element = MiniReact.createElement('h1', { title: 'foo' }, 'Hello') // 通过 React 创建一个 ReactElement 描述对象
+    const element = {
+      type: 'h1',
+      props: {
+        title: 'foo',
+        children: 'Hello'
+      }
+    }
+
+    const container = document.getElementById('root')
+    ReactDOM.render(element, container)
+
+  </script>
+</body>
+
+</html>
