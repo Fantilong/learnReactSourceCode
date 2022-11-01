@@ -30,17 +30,39 @@ function createTextElement(text) {
 }
 
 /**
+ * 创建DOM
+ * @param {*} fiber 
+ * @returns 
+ */
+function createDom(fiber) {
+  const dom = fiber.type === TEXT_ELEMENT ? document.createTextNode('') : document.createElement(fiber.type)
+  const isProperty = key => key !== 'children'
+  Object.keys(fiber.props).filter(isProperty).forEach(name => dom[name] = fiber.props[name])
+
+  return dom
+}
+
+
+/**
  * 渲染元素到dom上
  * @param {*} element 
  * @param {*} container 
  */
 function render(element, container) {
-  const dom = element.type === TEXT_ELEMENT ? document.createTextNode('') : document.createElement(element.type)
-  const isProperty = key => key !== 'children'
-  Object.keys(element.props).filter(isProperty).forEach(name => dom[name] = element.props[name])
+  // const dom = element.type === TEXT_ELEMENT ? document.createTextNode('') : document.createElement(element.type)
+  // const isProperty = key => key !== 'children'
+  // Object.keys(element.props).filter(isProperty).forEach(name => dom[name] = element.props[name])
 
-  element.props.children.forEach(child => this.render(child, dom))
-  container.appendChild(dom)
+  // element.props.children.forEach(child => this.render(child, dom))
+  // container.appendChild(dom)
+
+  // TODO set next unit of work
+  nextUnitOfWork = {
+    dom: container,
+    props: {
+      children: [element]
+    }
+  }
 }
 
 let nextUnitOfWork = null
@@ -61,6 +83,8 @@ function workLoop(deadline) {
 
 requestIdleCallback(workLoop)
 
-function performUnitOfWork(nextUnitOfWork) {
-  
+function performUnitOfWork(fiber) {
+  // TODO add dom node
+  // TODO create new fibers
+  // TODO return next unit of work
 }
