@@ -41,81 +41,89 @@ function createDom(fiber) {
   return dom
 }
 
-const isEvent = key => key.startsWitfh('on')
+const isEvent = key => key.startsWith('on')
 const isProperty = key => key !== 'children' && !isEvent(key)
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 
+
+/**
+ * 更新 dom 属性
+ * @param {*} dom 某個 fiber 的 dom 节点
+ * @param {*} prevProps 上一轮渲染的 fiber 的属性
+ * @param {*} nextProps 本轮渲染的 fiber 的属性
+ */
 function updateDom(dom, prevProps, nextProps) {
   // Remove old or changed event listeners
   Object.keys(prevProps)
-  .filter(isEvent)
-  .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key))
-  .forEach(name => {
-    const eventType = name.toLowerCase().substring(2)
-    dom.removeEventListener(eventType, prevProps[name])
-  })
+    .filter(isEvent) // 过滤出 event 属性
+    .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key)) // 就属性不存在于新属性中 或 值不相同
+    .forEach(name => {
+      const eventType = name.toLowerCase().substring(2)
+      dom.removeEventListener(eventType, prevProps[name]) // 清除原有值（即：处理函数）
+    })
 
   // Add event listeners
   Object.keys(nextProps)
-  .filter(isEvent)
-  .filter(isNew(prevProps, nextProps))
-  .forEach(name => {
-    const eventType = name.toLowerCase().substring(2)
-    dom.addEventListener(eventType, nextProps[name])
-  })
-  
+    .filter(isEvent)
+    .filter(isNew(prevProps, nextProps)) // 值不相同
+    .forEach(name => {
+      const eventType = name.toLowerCase().substring(2)
+      dom.addEventListener(eventType, nextProps[name]) // 更新值
+    })
+
   // Remove all old properties
   Object.keys(prevProps)
-    .filter(isProperty)
-    .filter(isGone(prevProps, nextProps))
-    .forEach(name => dom[name] = '')
+    .filter(isProperty) // 确定是属性，不是 children 或 event 属性 
+    .filter(isGone(prevProps, nextProps)) // 属性值不相同
+    .forEach(name => dom[name] = '') // 清空属性值
 
   // Set new or changed properties
   Object.keys(nextProps)
     .filter(isProperty)
-    .filter(isNew(prevProps, nextProps))
-    .forEach(name => dom[name] = nextProps[name])
+    .filter(isNew(prevProps, nextProps)) // 属性值不相同
+    .forEach(name => dom[name] = nextProps[name]) // 清空属性值
 }
 
+/**
+ * 提交根节点
+ */
 function commitRoot() {
   // TODO add nodes to dom
   deletions.forEach(commitWork)
   commitWork(wipRoot.child)
-  currentRoot = wipRoot
-  wipRoot = null
+  currentRoot = wipRoot // 存储更新过 fiber 根节点, 下次更新时使用
+  wipRoot = null // 清空根节点变量
 }
 
+/**
+ * 增删改 dom，以一个树杈为节点，一个组件即一个树杈节点
+ * 根据 fiber 描述对每一个节点做增、删、改 操作
+ * @param {*} fiber 
+ */
 function commitWork(fiber) {
-  if(!fiber) return
+  if (!fiber) return
 
   // 使用 parentDom 做增删改
   const domParent = fiber.parent.dom
 
-  if(fiber.effectTag === 'PLACEMENT' && fiber.dom != null) {
+  if (fiber.effectTag === 'PLACEMENT' && fiber.dom != null) { // 新增
     domParent.appendChild(fiber.dom)
-  } else if(fiber.effectTag === 'UPDATE' && fiber.dom != null) {
+  } else if (fiber.effectTag === 'UPDATE' && fiber.dom != null) { // 更新
     updateDom(fiber.dom, fiber.alternate.props, fiber.props)
-  } else if(fiber.effectTag === 'DELETION') {
+  } else if (fiber.effectTag === 'DELETION') { // 删除
     domParent.removeChild(fiber.dom)
   }
 
-  commitWork(fiber.child)
-  commitWork(fiber.sibling)
+  commitWork(fiber.child) // 递归操作第一个子节点
+  commitWork(fiber.sibling) // 递归操作兄弟节点
 }
 
-const MiniReact = {
-  createElement,
-  render
-}
 
-function App(props) {
-  return <h1>Hi {props.name}</h1>
-}
-const element = <App name="foo" />
-const container = document.getElementById('root')
-MiniReact.render(element, container)
-
+let nextUnitOfWork = null
+let currentRoot = null
+let wipRoot = null
+let deletions = null
 
 /**
  * 渲染元素到dom上
@@ -131,7 +139,8 @@ function render(element, container) {
   // container.appendChild(dom)
 
   // TODO set next unit of work
-  // 简写 work in progress (半成品) Root；半成品根节点
+  // 简写 work in progress (半成品) Root；半成品根节点(wipRoot)
+
   wipRoot = {
     dom: container,
     props: {
@@ -144,10 +153,6 @@ function render(element, container) {
   nextUnitOfWork = wipRoot
 }
 
-let nextUnitOfWork = null
-let currentRoot = null
-let wipRoot = null
-let deletions = null
 
 /**
  * 
@@ -162,7 +167,7 @@ function workLoop(deadline) {
   }
 
   // 将生成的 dom 渲染到页面上
-  if(!nextUnitOfWork && wipRoot) {
+  if (!nextUnitOfWork && wipRoot) {
     commitRoot()
   }
 
@@ -212,6 +217,7 @@ function performUnitOfWork(fiber) {
 
 /**
  * 将形成一种用 child 和 sibling 表示的父子数据结构 parent => child = firstChild; firstChild => sibling = secondChild; secondChild => sibling = thirdChild; ...
+ * mei
  * @param {*} wipFiber 半成品的 fiber 节点
  * @param {*} elements 即： props 中的 children, 也就是日常说的 子组件（存储在 children 属性中，注：是 reactElement 结构的表示法）
  */
@@ -226,7 +232,7 @@ function reconcileChildren(wipFiber, elements) {
 
     const sameType = oldFiber && element && element.type === oldFiber.type
 
-    if(sameType) {
+    if (sameType) {
       // TODO update the node
       newFiber = {
         type: oldFiber.type,
@@ -238,7 +244,7 @@ function reconcileChildren(wipFiber, elements) {
       }
     }
 
-    if(element && !sameType) {
+    if (element && !sameType) {
       // TODO add this node
       newFiber = {
         type: element.type,
@@ -250,7 +256,7 @@ function reconcileChildren(wipFiber, elements) {
       }
     }
 
-    if(oldFiber && !sameType) {
+    if (oldFiber && !sameType) {
       // TODO delete the oldFiber's node
       oldFiber.effectTag = 'DELETION'
       deletions.push(oldFiber)
@@ -266,3 +272,23 @@ function reconcileChildren(wipFiber, elements) {
     index++
   }
 }
+
+const MiniReact = {
+  createElement,
+  render,
+}
+
+// function App(props) {
+//   return <h1>Hi {props.name}</h1>
+// }
+// const element = <App name="foo" />
+
+const element = MiniReact.createElement(
+  'div',
+  { id: 'foo' },
+  MiniReact.createElement('a', null, 'bar'),
+  MiniReact.createElement('b')
+)
+const container = document.getElementById('root')
+
+MiniReact.render(element, container)
