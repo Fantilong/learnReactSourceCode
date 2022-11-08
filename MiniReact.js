@@ -17,7 +17,7 @@ function createElement(type, props, ...children) {
 }
 
 /**
- * @param {String} text 
+ * @param {String} text
  */
 function createTextElement(text) {
   return {
@@ -86,21 +86,10 @@ function commitRoot() {
   wipRoot = null
 }
 
-const MiniReact = {
-  createElement,
-  render
-}
-
-function App(props) {
-  return <h1>Hi {props.name}</h1>
-}
-const element = <App name="foo" />
-const container = document.getElementById('root')
-MiniReact.render(element, container)
-
 function commitWork(fiber) {
   if(!fiber) return
 
+  // 使用 parentDom 做增删改
   const domParent = fiber.parent.dom
 
   if(fiber.effectTag === 'PLACEMENT' && fiber.dom != null) {
@@ -114,6 +103,19 @@ function commitWork(fiber) {
   commitWork(fiber.child)
   commitWork(fiber.sibling)
 }
+
+const MiniReact = {
+  createElement,
+  render
+}
+
+function App(props) {
+  return <h1>Hi {props.name}</h1>
+}
+const element = <App name="foo" />
+const container = document.getElementById('root')
+MiniReact.render(element, container)
+
 
 /**
  * 渲染元素到dom上
@@ -129,6 +131,7 @@ function render(element, container) {
   // container.appendChild(dom)
 
   // TODO set next unit of work
+  // 简写 work in progress (半成品) Root；半成品根节点
   wipRoot = {
     dom: container,
     props: {
@@ -168,6 +171,12 @@ function workLoop(deadline) {
 
 requestIdleCallback(workLoop)
 
+
+/**
+ * 生成带dom和性质（UPDATE, PLACEMENT, DELETION）的fiber元素，
+ * @param {*} fiber 
+ * @returns fiber，返回值会重新当成参数传进来使用
+ */
 function performUnitOfWork(fiber) {
   /**
    * 树状回溯法
@@ -183,11 +192,6 @@ function performUnitOfWork(fiber) {
     fiber.dom = createDom(fiber)
   }
 
-  
-  // if (fiber.parent) {
-  //   fiber.parent.dom.appendChild(fiber.dom)
-  // }
-  
   // TODO create new fibers
   const elements = fiber.props.children
   reconcileChildren(fiber, elements)
@@ -206,6 +210,11 @@ function performUnitOfWork(fiber) {
   }
 }
 
+/**
+ * 将形成一种用 child 和 sibling 表示的父子数据结构 parent => child = firstChild; firstChild => sibling = secondChild; secondChild => sibling = thirdChild; ...
+ * @param {*} wipFiber 半成品的 fiber 节点
+ * @param {*} elements 即： props 中的 children, 也就是日常说的 子组件（存储在 children 属性中，注：是 reactElement 结构的表示法）
+ */
 function reconcileChildren(wipFiber, elements) {
   let index = 0
   let oldFiber = wipFiber.alternate && wipFiber.alternate.child
@@ -246,14 +255,6 @@ function reconcileChildren(wipFiber, elements) {
       oldFiber.effectTag = 'DELETION'
       deletions.push(oldFiber)
     }
-
-
-    // const newFiber = {
-    //   type: element.type,
-    //   props: element.props,
-    //   parent: wipFiber,
-    //   dom: null
-    // }
 
     if (index === 0) {
       wipFiber.child = newFiber
