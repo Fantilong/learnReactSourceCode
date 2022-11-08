@@ -223,11 +223,11 @@ function performUnitOfWork(fiber) {
  */
 function reconcileChildren(wipFiber, elements) {
   let index = 0
-  let oldFiber = wipFiber.alternate && wipFiber.alternate.child
+  let oldFiber = wipFiber.alternate && wipFiber.alternate.child // 上一轮渲染的 fiber
   let prevSibling = null
 
   while (index < elements.length || oldFiber !== null) {
-    const element = elements[index]
+    const element = elements[index] // 本轮要渲染的 element（即将生成该 element 的 fiber）
     let newFiber = null
 
     const sameType = oldFiber && element && element.type === oldFiber.type
