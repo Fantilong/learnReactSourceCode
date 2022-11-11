@@ -10,17 +10,33 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script> -->
   <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <script src="./MiniReact.js"></script>
 </head>
 
 <body>
   <div id="root"></div>
-  <script src="./MiniReact.js"></script>
-  <script>
-    // const miniReact = {
+  <script type="text/babel">
+    // const MiniReact = {
     //   createElement,
-    //   createTextElement,
     //   render
     // }
+    /** @jsx MiniReact.createElement */
+    function App(props) {
+      return <h1>Hi {props.name}</h1>
+    }
+    const element = <App name="foo" />
+
+    // const element = MiniReact.createElement(
+    //   'div',
+    //   { id: 'foo' },
+    //   MiniReact.createElement('a', null, 'bar'),
+    //   MiniReact.createElement('b')
+    // )
+
+    const container = document.getElementById('root')
+    MiniReact.render(element, container)
+
 
     // const element = miniReact.createElement(
     //   'div',

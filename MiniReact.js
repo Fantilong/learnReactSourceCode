@@ -104,19 +104,34 @@ function commitRoot() {
 function commitWork(fiber) {
   if (!fiber) return
 
+  let domParentFiber = fiber.parent
+  while (!domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent
+  }
+
   // 使用 parentDom 做增删改
-  const domParent = fiber.parent.dom
+  const domParent = domParentFiber.dom
 
   if (fiber.effectTag === 'PLACEMENT' && fiber.dom != null) { // 新增
     domParent.appendChild(fiber.dom)
   } else if (fiber.effectTag === 'UPDATE' && fiber.dom != null) { // 更新
     updateDom(fiber.dom, fiber.alternate.props, fiber.props)
   } else if (fiber.effectTag === 'DELETION') { // 删除
-    domParent.removeChild(fiber.dom)
+    commitDeletion(fiber, domParent)
+    // domParent.removeChild(fiber.dom)
   }
 
   commitWork(fiber.child) // 递归操作第一个子节点
   commitWork(fiber.sibling) // 递归操作兄弟节点
+}
+
+function commitDeletion(fiber, domParent) {
+  if (fiber.dom) {
+    domParent.removeChild(fiber.dom)
+  } else {
+    commitDeletion(fiber.child, domParent)
+  }
+
 }
 
 
@@ -192,14 +207,21 @@ function performUnitOfWork(fiber) {
    * 也没有同级层，懒回调停止
    */
 
-  // TODO add dom node
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber)
+  const isFunctionComponents = fiber.type instanceof Function
+  if (isFunctionComponents) {
+    updateFunctionComponent(fiber)
+  } else {
+    updateHostComponent(fiber)
   }
 
+  // TODO add dom node
+  // if (!fiber.dom) {
+  //   fiber.dom = createDom(fiber)
+  // }
+
   // TODO create new fibers
-  const elements = fiber.props.children
-  reconcileChildren(fiber, elements)
+  // const elements = fiber.props.children
+  // reconcileChildren(fiber, elements)
 
   // TODO return next unit of work
   if (fiber.child) {
@@ -215,6 +237,26 @@ function performUnitOfWork(fiber) {
   }
 }
 
+/**
+ * 
+ * @param {*} fiber 
+ */
+function updateFunctionComponent(fiber) {
+  const children = [fiber.type(fiber.props)]
+  reconcileChildren(fiber, children)
+}
+
+/**
+ * 
+ * @param {*} fiber 
+ */
+function updateHostComponent(fiber) {
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber)
+  }
+
+  reconcileChildren(fiber, fiber.props.children)
+}
 /**
  * 将形成一种用 child 和 sibling 表示的父子数据结构 parent => child = firstChild; firstChild => sibling = secondChild; secondChild => sibling = thirdChild; ...
  * mei
@@ -278,17 +320,19 @@ const MiniReact = {
   render,
 }
 
+// /** @jsx MiniReact.createElement */
 // function App(props) {
 //   return <h1>Hi {props.name}</h1>
 // }
 // const element = <App name="foo" />
 
-const element = MiniReact.createElement(
-  'div',
-  { id: 'foo' },
-  MiniReact.createElement('a', null, 'bar'),
-  MiniReact.createElement('b')
-)
-const container = document.getElementById('root')
+// // const element = MiniReact.createElement(
+// //   'div',
+// //   { id: 'foo' },
+// //   MiniReact.createElement('a', null, 'bar'),
+// //   MiniReact.createElement('b')
+// // )
 
-MiniReact.render(element, container)
+// const container = document.getElementById('root')
+
+// MiniReact.render(element, container)
